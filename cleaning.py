@@ -6,6 +6,7 @@ from dask import dataframe as dd
 #%matplotlib_inline
 import matplotlib as plt
 import numpy as np
+import scipy
 
 #dd.to_parquet(df, path= "C:/Users/LENOBVO/Master-Thesis", engine="pyarrow", compression=None)
 #print(ddf.groupby('company_symbol')[['x', 'y']].mean().compute().head())
@@ -109,6 +110,38 @@ trace = trace[(trace['cancel_trd'] != 1)]
 trace = trace[(pd.notnull(trace['trd_exctn_tm']))]
 trace.drop(['asof_cd', 'cancel_trd'], axis=1,inplace = True)
 print (len(trace))
+
+fisd_for_yield = fisd_main[['cusip_id','maturity','coupon','interest_frequency','principal_amt']]
+fisd_for_yield['maturity'] = pd.to_datetime(fisd_for_yield['maturity'])
+trace = trace.merge(fisd_for_yield,on='cusip_id',how='inner')
+trace = trace[pd.notnull(trace['rptd_pr'])]
+trace['days_to_maturity'] = (trace['maturity'] - trace['trd_exctn_dt']).astype('timedelta64[D]')
+trace['n_maturity'] = (trace['days_to_maturity'] / 365) * 2
+trace = trace[trace['days_to_maturity'] > 0]
+print (len(trace))
+print(trace.head())
+print(trace["principal_amt"].unique())
+def Px(Rate,Mkt_Price,Face,Freq,N,C):
+    return Mkt_Price - (Face * ( 1 + Rate / Freq ) ** ( - N ) + ( C / Rate ) * ( 1 - (1 + ( Rate / Freq )) ** -N ) )
+
+def YieldCalc(guess,Mkt_Price,Face,Freq,N,C):
+    x = scipy.optimize.newton(Px, guess,args = (Mkt_Price,Face,Freq,N,C), tol=.0000001, maxiter=100)
+    return x
+yld = {}
+for i in trace.index:
+    try:
+        yld.update({i:YieldCalc(trace['coupon'].loc[i]/(trace['principal_amt'].loc[i]/10),trace['rptd_pr'].loc[i],
+                                trace['principal_amt'].loc[i]/10, trace['interest_frequency'].loc[i],
+                                trace['n_maturity'].loc[i], trace['coupon'].loc[i])})
+    except(RuntimeError):
+        pass
+    else:
+        pass
+trace['ytm']=pd.Series(yld)
+trace = trace.sort_values(by = ['cusip_id','trd_exctn_dt','trd_exctn_tm'])
+print(trace.head())
+trace = trace[trace['ascii_rptd_vol_tx'] > 99999]
+print(len(trace))
 
 # trace.head()
 # import dtale
