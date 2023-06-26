@@ -17,12 +17,36 @@ print('Issues in FISD', len(fisd_main))
 print (len(fisd_main.prospectus_issuer_name.unique()))
 
 fisd_main = fisd_main[(fisd_main['bond_type'] =='CDEB') | (fisd_main['bond_type'] =='CPIK') |
-                      (fisd_main['bond_type'] =='CZ') | (fisd_main['bond_type'] =='CS')]
+                      (fisd_main['bond_type'] =='CZ') | (fisd_main['bond_type'] =='USBN') |
+                      (fisd_main['bond_type'] =='CMTN') | (fisd_main['bond_type'] =='CMTZ')]
 
 fisd_main = fisd_main[fisd_main['foreign_currency'] =='N']
+fisd_main = fisd_main[(fisd_main['pay_in_kind'] !='Y') | (fisd_main['pay_in_kind'].isna()) ]
+fisd_main = fisd_main[fisd_main['pay_in_kind_exp_date'].isna()]
+fisd_main = fisd_main[(fisd_main['yankee'] =='N') | (fisd_main['yankee'].isna()) ]
+fisd_main = fisd_main[(fisd_main['canadian'] =='N') | (fisd_main['canadian'].isna()) ]
+fisd_main = fisd_main[(fisd_main['coupon_type'] =='F') | (fisd_main['coupon_type']=='Z') ]
+fisd_main = fisd_main[fisd_main['fix_frequency'].isna()]
+fisd_main = fisd_main[fisd_main['coupon_change_indicator']=='N']
+fisd_main = fisd_main[(fisd_main['interest_frequency'] ==0) | (fisd_main['interest_frequency'] ==1) |
+                       (fisd_main['interest_frequency'] ==2) | (fisd_main['interest_frequency'] ==4) | (fisd_main['interest_frequency'] ==12)]
+fisd_main = fisd_main[fisd_main['rule_144a']=='N']
+fisd_main = fisd_main[(fisd_main['private_placement'] =='N') | (fisd_main['private_placement'].isna()) ]
+fisd_main = fisd_main[fisd_main['defaulted']=='N']
+fisd_main = fisd_main[fisd_main['filing_date'].isna()]
+fisd_main = fisd_main[fisd_main['convertible']=='N']
+fisd_main = fisd_main[fisd_main['exchange'].isna()]
+fisd_main = fisd_main[(fisd_main['putable'] =='N') | (fisd_main['putable'].isna()) ]
+fisd_main = fisd_main[(fisd_main['unit_deal'] =='N') | (fisd_main['unit_deal'].isna()) ]
+fisd_main = fisd_main[(fisd_main['exchangeable'] =='N') | (fisd_main['exchangeable'].isna()) ]
+fisd_main = fisd_main[fisd_main['perpetual'] =='N' ]
+fisd_main = fisd_main[(fisd_main['preferred_security'] =='N') | (fisd_main['preferred_security'].isna()) ]
+
+
 print (len(fisd_main))
 
 fisd_main['cusip_id'] = fisd_main['issuer_cusip'] + fisd_main['issue_cusip']
+fisd_main.to_parquet('fisd.parquet', engine="fastparquet",  compression='brotli' )
 good_cusips = pd.DataFrame(fisd_main['cusip_id'])
 good_cusips['identifier'] = 1
 print (len(good_cusips))
