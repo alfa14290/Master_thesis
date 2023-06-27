@@ -1,5 +1,3 @@
-
-
 import pandas as pd
 from dask import dataframe as dd
 #from autoviz.AutoViz_Class import AutoViz_Class
@@ -11,42 +9,53 @@ import scipy
 #dd.to_parquet(df, path= "C:/Users/LENOBVO/Master-Thesis", engine="pyarrow", compression=None)
 #print(ddf.groupby('company_symbol')[['x', 'y']].mean().compute().head())
 #print(ddf.columns.values)
-fisd_main= pd.read_csv('mergedissue.csv')
-print('Issues in FISD', len(fisd_main)) 
+# trace.head()
+# import dtale
+# dtale.show(df)
+# AV = AutoViz_Class()
+# AV.AutoViz("mergedissue.csv")
+# plt.show()
+def clean_fisd(filename):
+    fisd_main= pd.read_csv(filename)
+    print('Issues in FISD', len(fisd_main)) 
 
-print (len(fisd_main.prospectus_issuer_name.unique()))
+    print (len(fisd_main.prospectus_issuer_name.unique()))
 
-fisd_main = fisd_main[(fisd_main['bond_type'] =='CDEB') | (fisd_main['bond_type'] =='CPIK') |
-                      (fisd_main['bond_type'] =='CZ') | (fisd_main['bond_type'] =='USBN') |
-                      (fisd_main['bond_type'] =='CMTN') | (fisd_main['bond_type'] =='CMTZ')]
+    fisd_main = fisd_main[(fisd_main['bond_type'] =='CDEB') | (fisd_main['bond_type'] =='CPIK') |
+                          (fisd_main['bond_type'] =='CZ') | (fisd_main['bond_type'] =='USBN') |
+                          (fisd_main['bond_type'] =='CMTN') | (fisd_main['bond_type'] =='CMTZ')]
 
-fisd_main = fisd_main[fisd_main['foreign_currency'] =='N']
-fisd_main = fisd_main[(fisd_main['pay_in_kind'] !='Y') | (fisd_main['pay_in_kind'].isna()) ]
-fisd_main = fisd_main[fisd_main['pay_in_kind_exp_date'].isna()]
-fisd_main = fisd_main[(fisd_main['yankee'] =='N') | (fisd_main['yankee'].isna()) ]
-fisd_main = fisd_main[(fisd_main['canadian'] =='N') | (fisd_main['canadian'].isna()) ]
-fisd_main = fisd_main[(fisd_main['coupon_type'] =='F') | (fisd_main['coupon_type']=='Z') ]
-fisd_main = fisd_main[fisd_main['fix_frequency'].isna()]
-fisd_main = fisd_main[fisd_main['coupon_change_indicator']=='N']
-fisd_main = fisd_main[(fisd_main['interest_frequency'] ==0) | (fisd_main['interest_frequency'] ==1) |
-                       (fisd_main['interest_frequency'] ==2) | (fisd_main['interest_frequency'] ==4) | (fisd_main['interest_frequency'] ==12)]
-fisd_main = fisd_main[fisd_main['rule_144a']=='N']
-fisd_main = fisd_main[(fisd_main['private_placement'] =='N') | (fisd_main['private_placement'].isna()) ]
-fisd_main = fisd_main[fisd_main['defaulted']=='N']
-fisd_main = fisd_main[fisd_main['filing_date'].isna()]
-fisd_main = fisd_main[fisd_main['convertible']=='N']
-fisd_main = fisd_main[fisd_main['exchange'].isna()]
-fisd_main = fisd_main[(fisd_main['putable'] =='N') | (fisd_main['putable'].isna()) ]
-fisd_main = fisd_main[(fisd_main['unit_deal'] =='N') | (fisd_main['unit_deal'].isna()) ]
-fisd_main = fisd_main[(fisd_main['exchangeable'] =='N') | (fisd_main['exchangeable'].isna()) ]
-fisd_main = fisd_main[fisd_main['perpetual'] =='N' ]
-fisd_main = fisd_main[(fisd_main['preferred_security'] =='N') | (fisd_main['preferred_security'].isna()) ]
+    fisd_main = fisd_main[fisd_main['foreign_currency'] =='N']
+    fisd_main = fisd_main[(fisd_main['pay_in_kind'] !='Y') | (fisd_main['pay_in_kind'].isna()) ]
+    fisd_main = fisd_main[fisd_main['pay_in_kind_exp_date'].isna()]
+    fisd_main = fisd_main[(fisd_main['yankee'] =='N') | (fisd_main['yankee'].isna()) ]
+    fisd_main = fisd_main[(fisd_main['canadian'] =='N') | (fisd_main['canadian'].isna()) ]
+    fisd_main = fisd_main[(fisd_main['coupon_type'] =='F') | (fisd_main['coupon_type']=='Z') ]
+    fisd_main = fisd_main[fisd_main['fix_frequency'].isna()]
+    fisd_main = fisd_main[fisd_main['coupon_change_indicator']=='N']
+    fisd_main = fisd_main[(fisd_main['interest_frequency'] ==0) | (fisd_main['interest_frequency'] ==1) |
+                           (fisd_main['interest_frequency'] ==2) | (fisd_main['interest_frequency'] ==4) | (fisd_main['interest_frequency'] ==12)]
+    fisd_main = fisd_main[fisd_main['rule_144a']=='N']
+    fisd_main = fisd_main[(fisd_main['private_placement'] =='N') | (fisd_main['private_placement'].isna()) ]
+    fisd_main = fisd_main[fisd_main['defaulted']=='N']
+    fisd_main = fisd_main[fisd_main['filing_date'].isna()]
+    fisd_main = fisd_main[fisd_main['convertible']=='N']
+    fisd_main = fisd_main[fisd_main['exchange'].isna()]
+    fisd_main = fisd_main[(fisd_main['putable'] =='N') | (fisd_main['putable'].isna()) ]
+    fisd_main = fisd_main[(fisd_main['unit_deal'] =='N') | (fisd_main['unit_deal'].isna()) ]
+    fisd_main = fisd_main[(fisd_main['exchangeable'] =='N') | (fisd_main['exchangeable'].isna()) ]
+    fisd_main = fisd_main[fisd_main['perpetual'] =='N' ]
+    fisd_main = fisd_main[(fisd_main['preferred_security'] =='N') | (fisd_main['preferred_security'].isna()) ]
+    fisd_main['cusip_id'] = fisd_main['issuer_cusip'] + fisd_main['issue_cusip']
+    return fisd_main
 
+### transform merged issue ###
+# filename = 'mergedissue.csv'
+# fisd_main = clean_fisd(filename)
+# fisd_main.to_parquet('fisd.parquet', engine="fastparquet",  compression='brotli' )
 
-print (len(fisd_main))
-
-fisd_main['cusip_id'] = fisd_main['issuer_cusip'] + fisd_main['issue_cusip']
-fisd_main.to_parquet('fisd.parquet', engine="fastparquet",  compression='brotli' )
+### read tranformed merged isue ###
+fisd_main = pd.read_parquet('./data/fisd.parquet')
 good_cusips = pd.DataFrame(fisd_main['cusip_id'])
 good_cusips['identifier'] = 1
 print (len(good_cusips))
@@ -54,9 +63,12 @@ print ('Issues in FISD', len(fisd_main))
 
 ### Trace million rows ###
 trace = pd.read_csv('./data/small_trace.csv')
+## check trace data types
 print(trace.dtypes)
 print( trace.memory_usage(deep=True))
-print('common cusip_id are', np.intersect1d(fisd_main['cusip_id'], trace['cusip_id'].astype(str)))
+### common cusipid between transformed merged issue and trace trade are ###
+common_cusip_id = np.intersect1d(fisd_main['cusip_id'], trace['cusip_id'].astype(str))
+print('length of common cusip_id are', len(common_cusip_id))
 
 # #changing date to datetime
 trace['trd_exctn_dt'] = trace.trd_exctn_dt.str[:4] + '-' + trace.trd_exctn_dt.str[5:7] + '-' + trace.trd_exctn_dt.str[8:10]
@@ -167,9 +179,4 @@ print(trace.head())
 trace = trace[trace['ascii_rptd_vol_tx'] > 99999]
 print(len(trace))
 
-# trace.head()
-# import dtale
-# dtale.show(df)
-# AV = AutoViz_Class()
-# AV.AutoViz("mergedissue.csv")
-# plt.show()
+
